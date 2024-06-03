@@ -1,0 +1,295 @@
+-- phpMyAdmin SQL Dump
+-- version 5.1.0
+-- https://www.phpmyadmin.net/
+--
+-- Хост: localhost
+-- Время создания: Июн 03 2024 г., 01:13
+-- Версия сервера: 5.7.33-0ubuntu0.16.04.1
+-- Версия PHP: 8.0.3
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- База данных: `isp_p_Comisarov`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `Car`
+--
+
+CREATE TABLE `Car` (
+  `CarID` int(11) NOT NULL,
+  `LicensePlate` varchar(20) DEFAULT NULL,
+  `Brand` varchar(50) DEFAULT NULL,
+  `Model` varchar(50) DEFAULT NULL,
+  `Color` varchar(20) DEFAULT NULL,
+  `YearOfProduction` year(4) DEFAULT NULL,
+  `RegistrationDate` date DEFAULT NULL,
+  `DriverID` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=cp1251;
+
+--
+-- Дамп данных таблицы `Car`
+--
+
+INSERT INTO `Car` (`CarID`, `LicensePlate`, `Brand`, `Model`, `Color`, `YearOfProduction`, `RegistrationDate`, `DriverID`) VALUES
+(1, 'ABC123', 'Toyota', 'Corolla', 'Red', 2018, '2018-01-01', 1),
+(2, 'DEF456', 'Honda', 'Civic', 'Blue', 2019, '2019-01-01', 2),
+(3, 'GHI789', 'Ford', 'Mustang', 'Black', 2020, '2020-01-01', 3),
+(4, 'JKL012', 'Chevrolet', 'Camaro', 'Silver', 2017, '2017-01-01', 4),
+(5, 'MNO345', 'Nissan', 'Altima', 'White', 2016, '2016-01-01', 5),
+(6, 'PQR678', 'BMW', 'X3', 'Gray', 2021, '2021-01-01', 6),
+(7, 'STU901', 'Mercedes-Benz', 'C-Class', 'Gold', 2020, '2020-01-01', 7),
+(8, 'VWX222', 'Audi', 'Q5', 'Brown', 2019, '2019-01-01', 8),
+(9, 'XYZ333', 'Volkswagen', 'Jetta', 'Green', 2018, '2018-01-01', 9),
+(10, 'ZAB444', 'Subaru', 'Outback', 'Orange', 2017, '2017-01-01', 10),
+(11, 'BCD555', 'Mazda', 'CX-5', 'Purple', 2016, '2016-01-01', 11),
+(12, 'EFG666', 'Hyundai', 'Santa Fe', 'Yellow', 2021, '2021-01-01', 12),
+(13, 'HIJ777', 'Kia', 'Sportage', 'Pink', 2020, '2020-01-01', 13),
+(14, 'JKL888', 'Tesla', 'Model 3', 'Maroon', 2019, '2019-01-01', 14),
+(15, 'KLM999', 'Porsche', 'Cayenne', 'Teal', 2018, '2018-01-01', 15);
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `Driver`
+--
+
+CREATE TABLE `Driver` (
+  `DriverID` int(11) NOT NULL,
+  `LicenseNumber` varchar(20) DEFAULT NULL,
+  `FullName` varchar(100) DEFAULT NULL,
+  `Address` varchar(200) DEFAULT NULL,
+  `PhoneNumber` varchar(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=cp1251;
+
+--
+-- Дамп данных таблицы `Driver`
+--
+
+INSERT INTO `Driver` (`DriverID`, `LicenseNumber`, `FullName`, `Address`, `PhoneNumber`) VALUES
+(1, 'AB1233', 'John Doe', '123 Main St', '555-1234'),
+(2, 'CD4556', 'Jane Smith', '456 Elm St', '555-5678'),
+(3, 'EF7777', 'Bob Johnson', '777 Oak St', '555-9090'),
+(4, 'GH8888', 'Alice Williams', '888 Pine St', '555-2222'),
+(5, 'IJ9999', 'Charlie Brown', '999 Maple St', '555-3333'),
+(6, 'KL0000', 'Emma Davis', '000 Birch St', '555-4444'),
+(7, 'LM1111', 'Mike Miller', '111 Walnut St', '555-5555'),
+(8, 'NO2222', 'Sarah Taylor', '222 Cherry St', '555-6666'),
+(9, 'PQ3333', 'Tom Wilson', '333 Hickory St', '555-7777'),
+(10, 'RS4444', 'Lucy Moore', '444 Spruce St', '555-8888'),
+(11, 'TU5555', 'Harry Thomas', '555 Cedar St', '555-9999'),
+(12, 'UV6666', 'Karen White', '666 Ash St', '555-0000'),
+(13, 'WV7777', 'Mark Green', '777 Beech St', '555-1111'),
+(14, 'XY8888', 'Nancy Adams', '888 Sycamore St', '555-2222'),
+(15, 'YZ9999', 'Robert Clark', '999 Magnolia St', '555-3333');
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `Fine`
+--
+
+CREATE TABLE `Fine` (
+  `FineID` int(11) NOT NULL,
+  `ViolationID` int(11) DEFAULT NULL,
+  `ViolationDate` datetime DEFAULT NULL,
+  `District` varchar(100) DEFAULT NULL,
+  `FineAmount` decimal(10,2) DEFAULT NULL,
+  `Paid` tinyint(1) DEFAULT NULL,
+  `SuspensionPeriod` int(11) DEFAULT NULL,
+  `BaseAmount` decimal(10,2) DEFAULT NULL,
+  `InspectorID` int(11) DEFAULT NULL,
+  `DriverID` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=cp1251;
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `Inspector`
+--
+
+CREATE TABLE `Inspector` (
+  `InspectorID` int(11) NOT NULL,
+  `FullName` varchar(100) DEFAULT NULL,
+  `PhoneNumber` varchar(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=cp1251;
+
+--
+-- Дамп данных таблицы `Inspector`
+--
+
+INSERT INTO `Inspector` (`InspectorID`, `FullName`, `PhoneNumber`) VALUES
+(1, 'John Doe', 'IN001'),
+(2, 'Jane Smith', 'IN002'),
+(3, 'Bob Johnson', 'IN003'),
+(4, 'Alice Williams', 'IN004'),
+(5, 'Charlie Brown', 'IN005'),
+(6, 'Emma Davis', 'IN006'),
+(7, 'Mike Miller', 'IN007'),
+(8, 'Sarah Taylor', 'IN008'),
+(9, 'Tom Wilson', 'IN009'),
+(10, 'Lucy Moore', 'IN010'),
+(11, 'Harry Thomas', 'IN011'),
+(12, 'Karen White', 'IN012'),
+(13, 'Mark Green', 'IN013'),
+(14, 'Nancy Adams', 'IN014'),
+(15, 'Robert Clark', 'IN015'),
+(16, 'John Doe', 'IN001'),
+(17, 'Jane Smith', 'IN002'),
+(18, 'Bob Johnson', 'IN003'),
+(19, 'Alice Williams', 'IN004'),
+(20, 'Charlie Brown', 'IN005'),
+(21, 'Emma Davis', 'IN006'),
+(22, 'Mike Miller', 'IN007'),
+(23, 'Sarah Taylor', 'IN008'),
+(24, 'Tom Wilson', 'IN009'),
+(25, 'Lucy Moore', 'IN010'),
+(26, 'Harry Thomas', 'IN011'),
+(27, 'Karen White', 'IN012'),
+(28, 'Mark Green', 'IN013'),
+(29, 'Nancy Adams', 'IN014'),
+(30, 'Robert Clark', 'IN015');
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `Violation`
+--
+
+CREATE TABLE `Violation` (
+  `ViolationID` int(11) NOT NULL,
+  `ViolationCode` varchar(20) DEFAULT NULL,
+  `ViolationType` varchar(100) DEFAULT NULL,
+  `FineMinimum` decimal(10,2) DEFAULT NULL,
+  `FineMaximum` decimal(10,2) DEFAULT NULL,
+  `WarningNeeded` tinyint(1) DEFAULT NULL,
+  `SuspensionMinimum` int(11) DEFAULT NULL,
+  `SuspensionMaximum` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=cp1251;
+
+--
+-- Дамп данных таблицы `Violation`
+--
+
+INSERT INTO `Violation` (`ViolationID`, `ViolationCode`, `ViolationType`, `FineMinimum`, `FineMaximum`, `WarningNeeded`, `SuspensionMinimum`, `SuspensionMaximum`) VALUES
+(1, 'SP101', 'Speeding', '50.00', '500.00', 0, 0, 0),
+(2, 'DU101', 'DUI', '1000.00', '5000.00', 0, 6, 12),
+(3, 'RE101', 'Reckless Driving', '250.00', '2500.00', 0, 0, 6),
+(4, 'RP101', 'Running a Red Light', '100.00', '1000.00', 0, 0, 0),
+(5, 'ST101', 'Stop Sign Violation', '50.00', '500.00', 0, 0, 0),
+(6, 'LA101', 'Lane Violation', '25.00', '250.00', 1, 0, 0),
+(7, 'SE101', 'Seatbelt Violation', '25.00', '250.00', 1, 0, 0),
+(8, 'PH101', 'Using a Phone while Driving', '50.00', '500.00', 1, 0, 0),
+(9, 'IN101', 'Insurance Violation', '250.00', '2500.00', 0, 0, 0),
+(10, 'RE101', 'Registration Violation', '100.00', '1000.00', 0, 0, 0),
+(11, 'LI101', 'Littering', '25.00', '250.00', 1, 0, 0),
+(12, 'PE101', 'Pedestrian Violation', '50.00', '500.00', 0, 0, 0),
+(13, 'SI101', 'Sign Violation', '25.00', '250.00', 1, 0, 0),
+(14, 'TA101', 'Tailgating', '25.00', '250.00', 1, 0, 0),
+(15, 'TI101', 'Tinted Windows', '25.00', '250.00', 1, 0, 0);
+
+--
+-- Индексы сохранённых таблиц
+--
+
+--
+-- Индексы таблицы `Car`
+--
+ALTER TABLE `Car`
+  ADD PRIMARY KEY (`CarID`),
+  ADD KEY `DriverID` (`DriverID`);
+
+--
+-- Индексы таблицы `Driver`
+--
+ALTER TABLE `Driver`
+  ADD PRIMARY KEY (`DriverID`);
+
+--
+-- Индексы таблицы `Fine`
+--
+ALTER TABLE `Fine`
+  ADD PRIMARY KEY (`FineID`),
+  ADD KEY `ViolationID` (`ViolationID`),
+  ADD KEY `DriverID` (`DriverID`),
+  ADD KEY `InspectorID` (`InspectorID`);
+
+--
+-- Индексы таблицы `Inspector`
+--
+ALTER TABLE `Inspector`
+  ADD PRIMARY KEY (`InspectorID`);
+
+--
+-- Индексы таблицы `Violation`
+--
+ALTER TABLE `Violation`
+  ADD PRIMARY KEY (`ViolationID`);
+
+--
+-- AUTO_INCREMENT для сохранённых таблиц
+--
+
+--
+-- AUTO_INCREMENT для таблицы `Car`
+--
+ALTER TABLE `Car`
+  MODIFY `CarID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+
+--
+-- AUTO_INCREMENT для таблицы `Driver`
+--
+ALTER TABLE `Driver`
+  MODIFY `DriverID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+
+--
+-- AUTO_INCREMENT для таблицы `Fine`
+--
+ALTER TABLE `Fine`
+  MODIFY `FineID` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT для таблицы `Inspector`
+--
+ALTER TABLE `Inspector`
+  MODIFY `InspectorID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+
+--
+-- AUTO_INCREMENT для таблицы `Violation`
+--
+ALTER TABLE `Violation`
+  MODIFY `ViolationID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+
+--
+-- Ограничения внешнего ключа сохраненных таблиц
+--
+
+--
+-- Ограничения внешнего ключа таблицы `Car`
+--
+ALTER TABLE `Car`
+  ADD CONSTRAINT `Car_ibfk_1` FOREIGN KEY (`DriverID`) REFERENCES `Driver` (`DriverID`);
+
+--
+-- Ограничения внешнего ключа таблицы `Fine`
+--
+ALTER TABLE `Fine`
+  ADD CONSTRAINT `Fine_ibfk_1` FOREIGN KEY (`ViolationID`) REFERENCES `Violations` (`ViolationID`),
+  ADD CONSTRAINT `Fine_ibfk_2` FOREIGN KEY (`DriverID`) REFERENCES `Driver` (`DriverID`),
+  ADD CONSTRAINT `Fine_ibfk_3` FOREIGN KEY (`InspectorID`) REFERENCES `Inspector` (`InspectorID`);
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
