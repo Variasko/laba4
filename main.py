@@ -1,67 +1,43 @@
-from fastapi import FastAPI, HTTPException, Depends
-from pydantic import BaseModel
-from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session, DeclarativeBase
-from sqlalchemy.exc import IntegrityError
+from fastapi import *
+from database import *
+from sqlalchemy.orm import Session
 
-# Создание объекта FastAPI
-app = FastAPI()
+from models import *
+from database import engine
 
-# Настройка базы данных MySQL
-SQLALCHEMY_DATABASE_URL = "mysql+pymysql://isp_is_test:12345@192.168.25.23/isp_is_test"
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-class Base(DeclarativeBase): ...
+app = FastAPI(title='Лабораторная работа №4')
 
-# Определение модели SQLAlchemy для пользователя
-class User(Base):
-    __tablename__ = "users"
+@app.get('/drivers')
+def get_drivers():
+    with Session(autoflush=False, bind=engine) as db:
+        drivers = db.query(Driver).all()
+        response = []
+        for i in drivers:
+            response.append({
+                'LN':i.licence_number,
+                'surname':i.surname,
+                'name':i.name,
+                'registrationAddress':i.registration_address,
+                'phone':i.phone
+            })
+        result = {'drivers':response}
+        return result
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(50), index=True)  # Указываем длину для VARCHAR
-    email = Column(String(100), unique=True, index=True)  # Указываем длину для VARCHAR
+@app.get('/cars')
+def get_cars():
+    with Session(autoflush=False, bind=engine) as db:
+        cars = db.query(Car).all()
+        response = []
+        for i in cars:
+            response.append({
+                'GN':i.goverment_number,
+                'brand':i.brand,
+                'model':i.model,
+                'color':i.color,
+                'prodYear':i.production_year,
+                'regDate':i.registration_date,
+                'driverId':i.driver
+            })
+        result = {'cars':response}
+        return result
 
-# Создание таблиц в базе данных
-Base.metadata.create_all(bind=engine)
-
-# Определение Pydantic модели для пользователя
-class UserCreate(BaseModel):
-    name: str
-    email: str
-
-class UserResponse(BaseModel):
-    id: int
-    name: str
-    email: str
-
-
-
-# Зависимость для получения сессии базы данных
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-# Маршрут для получения пользователя по ID
-@app.get("/users/{user_id}", response_model=UserResponse)
-def read_user(user_id: int, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.id == user_id).first()
-    if user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
-
-# Маршрут для создания нового пользователя
-@app.post("/users/", response_model=UserResponse)
-def create_user(user: UserCreate, db: Session = Depends(get_db)):
-    db_user = User(name=user.name, email=user.email)
-    try:
-        db.add(db_user)
-        db.commit()
-        db.refresh(db_user)
-        return db_user
-    except IntegrityError:
-        db.rollback()
-        raise HTTPException(status_code=400, detail="Email already registered")
