@@ -1,11 +1,12 @@
-from sqlalchemy import create_engine
+from datetime import datetime
+
+from sqlalchemy import create_engine, FetchedValue
 from sqlalchemy.orm import DeclarativeBase, sessionmaker, Session
 from sqlalchemy import Column, Integer, String, ForeignKey, REAL, Boolean, DateTime
 from sqlalchemy.orm import relationship
 
 
-DATABASE_URL = 'sqlite:///laba4.db' # измените на соответствующий URL базы данных
-
+DATABASE_URL = "mysql://isp_p_Comisarov:12345@77.91.86.135/isp_p_Comisarov"
 engine = create_engine(DATABASE_URL)
 
 class Base(DeclarativeBase): ...
@@ -13,7 +14,7 @@ class Base(DeclarativeBase): ...
 class Car(Base):
     __tablename__ = 'car'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False, server_default=FetchedValue())
     goverment_number = Column(String(10), nullable=False)
     brand = Column(String(50), nullable=False)
     model = Column(String(50), nullable=False)
@@ -26,13 +27,13 @@ class Car(Base):
 class District(Base):
     __tablename__ = 'district'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False, server_default=FetchedValue())
     name = Column(String(50), nullable=False)
 
 class Driver(Base):
     __tablename__ = 'driver'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False, server_default=FetchedValue())
     licence_number = Column(String(20), nullable=False)
     surname = Column(String(50), nullable=False)
     name = Column(String(50), nullable=False)
@@ -42,7 +43,7 @@ class Driver(Base):
 class Fine(Base):
     __tablename__ = 'fine'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False, server_default=FetchedValue())
     violation_id = Column(Integer, ForeignKey('violation.id'), nullable=False)
     date_time = Column(DateTime, nullable=False)
     district_id = Column(Integer, ForeignKey('district.id'), nullable=False)
@@ -58,7 +59,7 @@ class Fine(Base):
 class Inspector(Base):
     __tablename__ = 'inspector'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False, server_default=FetchedValue())
     surname = Column(String(50), nullable=False)
     name = Column(String(50), nullable=False)
     service_number = Column(Integer, nullable=False)
@@ -66,7 +67,7 @@ class Inspector(Base):
 class Violation(Base):
     __tablename__ = 'violation'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False, server_default=FetchedValue())
     min_fine = Column(REAL, nullable=False)
     max_fine = Column(REAL, nullable=False)
     warning_needed = Column(Boolean, nullable=False)
@@ -79,8 +80,10 @@ class Violation(Base):
 class ViolationType(Base):
     __tablename__ = 'violation_type'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False, server_default=FetchedValue())
     name = Column(String(50), nullable=False)
 
 
+
 Base.metadata.create_all(engine)
+

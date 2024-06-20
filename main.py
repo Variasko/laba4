@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from fastapi import *
 
@@ -134,7 +134,7 @@ def get_cars_by_year(year: int):
 @app.get('/max_fine_by_violation')
 def get_max_fine_by_violation():
     with Session(autoflush=False, bind=engine) as db:
-        max_fines = db.query(Violation.violation_type_id, func.max(Violation.fine_amount)).group_by(Violation.violation_type_id).all()
+        max_fines = db.query(Violation.violation_type_id, func.max(Violation.max_fine)).group_by(Violation.violation_type_id).all()
         response = []
         for max_fine in max_fines:
             response.append({
@@ -231,3 +231,92 @@ def get_most_fined_violations():
             })
         result = {'most_fined_violations': response}
         return result
+@app.post('/new_driver')
+def new_driver(ln: int, surname:str, name: str, regAdd: str, phone: str):
+    with Session(autoflush=False, bind=engine) as db:
+        try:
+            new_driver = Driver(licence_number=ln, surname=surname, name=name, registration_address=regAdd, phone=phone)
+            db.add(new_driver)
+            db.commit()
+            return {'status': 200, 'message': 'Новый водитель добавлен'}
+        except:
+            return {'status': 500, 'message': 'Iternal Server Error'}
+@app.post('/new_car')
+def new_car(gov_num: str, brand: str, model: str, color:str, prodYear:int, regDate: str, driverId: int):
+    with Session(autoflush=False, bind=engine) as db:
+        try:
+            new_car(goverment_number=gov_num, brand=brand, model=model, color=color, production_year=prodYear, registration_date=regDate, driver_id=driverId)
+            db.add(new_car)
+            db.commit()
+            return {'status': 200, 'message': 'Новый водитель добавлен'}
+        except:
+            return {'status': 500, 'message': 'Iternal Server Error'}
+
+@app.get('/districts')
+def get_districs():
+    with Session(autoflush=False, bind=engine) as db:
+        districts = db.query(District).all()
+        response = []
+        for i in districts:
+            response.append({
+                'id':i.id,
+                'name':i.name
+            })
+        result = {'districts':response}
+        return result
+@app.post('/new_district')
+def new_district(name: str):
+    with Session(autoflush=False, bind=engine) as db:
+        try:
+            new_district = District(name=name)
+            db.add(new_district)
+            db.commit()
+            return {'status' : 200, 'message' : 'Новый район добавлен'}
+        except:
+            return {'status' : 500, 'message' : 'Iternal Server Error'}
+@app.get('/inspectors')
+def get_inspectors():
+    with Session(autoflush=False, bind=engine) as db:
+        inspectors = db.query(Inspector).all()
+        response = []
+        for i in inspectors:
+            response.append({
+                'id':i.id,
+                'surname':i.surname,
+                'name':i.name,
+                'service_number':i.service_number
+            })
+        result = {'inspectors':response}
+        return result
+@app.post('/new_inspector')
+def new_inspector(surname: str, name: str, service_number: int):
+    with Session(autoflush=False, bind=engine) as db:
+        try:
+            new_inspector = Inspector(name=name, surname=surname, service_number=service_number)
+            db.add(new_inspector)
+            db.commit()
+            return {'status': 200, 'message': 'Новый район добавлен'}
+        except:
+            return {'status': 500, 'message': 'Iternal Server Error'}
+@app.get('/violation_types')
+def get_violation_types():
+    with Session(autoflush=False, bind=engine) as db:
+        violation_types = db.query(ViolationType).all()
+        response = []
+        for i in violation_types:
+            response.append({
+                'id':i.id,
+                'name':i.name
+            })
+        result = {'violation_types':response}
+        return result
+@app.post('/new_violation_type')
+def new_violation_type(name: str):
+    with Session(autoflush=False, bind=engine) as db:
+        try:
+            new_violation_type = ViolationType(name=name)
+            db.add(new_violation_type)
+            db.commit()
+            return {'status': 200, 'message': 'Новый район добавлен'}
+        except:
+            return {'status': 500, 'message': 'Iternal Server Error'}
