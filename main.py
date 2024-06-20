@@ -1,8 +1,11 @@
+from datetime import datetime
+
 from fastapi import *
-from database import *
+
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from models import *
+from database import *
 from database import engine
 
 app = FastAPI(title='Лабораторная работа №4')
@@ -14,6 +17,7 @@ def get_drivers():
         response = []
         for i in drivers:
             response.append({
+                'id':i.id,
                 'LN':i.licence_number,
                 'surname':i.surname,
                 'name':i.name,
@@ -22,7 +26,6 @@ def get_drivers():
             })
         result = {'drivers':response}
         return result
-
 @app.get('/cars')
 def get_cars():
     with Session(autoflush=False, bind=engine) as db:
@@ -30,6 +33,7 @@ def get_cars():
         response = []
         for i in cars:
             response.append({
+                'id':i.id,
                 'GN':i.goverment_number,
                 'brand':i.brand,
                 'model':i.model,
@@ -40,4 +44,190 @@ def get_cars():
             })
         result = {'cars':response}
         return result
+@app.get('/violations')
+def get_violations():
+    with Session(autoflush=False, bind=engine) as db:
+        violations = db.query(Violation).all()
+        response = []
+        for i in violations:
+            response.append({
+                'id':i.id,
+                'min_fine':i.min_fine,
+                'max_fine':i.max_fine,
+                'warningNeeded':i.warning_needed,
+                'min_suspension':i.min_suspension,
+                'max_suspension':i.max_suspension,
+                'violationTypeId':i.violation_type_id,
+                'violationCode':i.violation_code
+            })
+        result = {'violations':response}
+        return result
+@app.get('/fines')
+def get_fines():
+    with Session(autoflush=False, bind=engine) as db:
+        fines = db.query(Fine).all()
+        response = []
+        for i in fines:
+            response.append({
+                'id':i.id,
+                'violationId':i.violation_id,
+                'dateTime':i.date_time,
+                'districtId':i.district_id,
+                'fineAmount':i.fine_amount,
+                'isPaid':i.is_paid,
+                'suspensionPeriod':i.suspension_period,
+                'inspectorId':i.inspector_id,
+                'driverId':i.driver_id
+            })
+        result = {'fines':response}
+        return result
 
+#ЗАДАНИЯ СЛОЖНЕЕ!!!
+@app.get('/drivers_with_multiple_cars')
+def get_drivers_with_multiple_cars():
+    with Session(autoflush=False, bind=engine) as db:
+        drivers = db.query(Driver).join(Car).group_by(Driver.id).having(func.count(Car.id) > 1).all()
+        response = []
+        for driver in drivers:
+            response.append({
+                'id': driver.id,
+                'licenseNumber': driver.licence_number,
+                'surname': driver.surname,
+                'name': driver.name,
+                'registrationAddress': driver.registration_address,
+                'phone': driver.phone
+            })
+        result = {'drivers': response}
+        return result
+@app.get('/violation_counts')
+def get_violation_counts(start_date: str, end_date: str):
+    start_date = datetime.strptime(start_date, '%Y-%m-%d')
+    end_date = datetime.strptime(end_date, '%Y-%m-%d')
+    with Session(autoflush=False, bind=engine) as db:
+        violation_counts = db.query(Violation.violation_type_id, func.count(Fine.id)).join(Fine).filter(Fine.date_time.between(start_date, end_date)).group_by(Violation.violation_type_id).all()
+        response = []
+        for violation_count in violation_counts:
+            response.append({
+                'violationTypeId': violation_count[0],
+                'count': violation_count[1]
+            })
+        result = {'violation_counts': response}
+        return result
+@app.get('/cars_by_year')
+def get_cars_by_year(year: int):
+    with Session(autoflush=False, bind=engine) as db:
+        cars = db.query(Car).filter(Car.production_year == year).order_by(Car.production_year.desc()).all()
+        response = []
+        for car in cars:
+            response.append({
+                'id': car.id,
+                'governmentNumber': car.goverment_number,
+                'brand': car.brand,
+                'model': car.model,
+                'color': car.color,
+                'productionYear': car.production_year,
+                'registrationDate': car.registration_date,
+                'driverId': car.driver_id
+            })
+        result = {'cars': response}
+        return result
+@app.get('/max_fine_by_violation')
+def get_max_fine_by_violation():
+    with Session(autoflush=False, bind=engine) as db:
+        max_fines = db.query(Violation.violation_type_id, func.max(Violation.fine_amount)).group_by(Violation.violation_type_id).all()
+        response = []
+        for max_fine in max_fines:
+            response.append({
+                'violationTypeId': max_fine[0],
+                'maxFineAmount': max_fine[1]
+            })
+        result = {'max_fines': response}
+        return result
+@app.get('/drivers_with_multiple_violations')
+def get_drivers_with_multiple_violations():
+    with Session(autoflush=False, bind=engine) as db:
+        one_month_ago = datetime.now() - timedelta(days=30)
+        drivers = db.query(Driver, func.count(Fine.id)).join(Fine).filter(Fine.date_time >= one_month_ago).group_by(Driver.id).having(func.count(Fine.id) > 3).all()
+        response = []
+        for driver, count in drivers:
+            response.append({
+                'driverId': driver.id,
+                'licenseNumber': driver.license_number,
+                'surname': driver.surname,
+                'name': driver.name,
+                'violationCount': count
+            })
+        result = {'drivers': response}
+        return result
+@app.get('/district_with_most_violations')
+def get_district_with_most_violations(start_date: str, end_date: str):
+    start_date = datetime.strptime(start_date, '%Y-%m-%d')
+    end_date = datetime.strptime(end_date, '%Y-%m-%d')
+    with Session(autoflush=False, bind=engine) as db:
+        district = db.query(District, func.count(Fine.id)).join(Fine).filter(Fine.date_time.between(start_date, end_date)).group_by(District.id).order_by(func.count(Fine.id).desc()).first()
+        if district:
+            response = {
+                'districtId': district[0].id,
+                'districtName': district[0].name,
+                'violationCount': district[1]
+            }
+            result = {'district': response}
+        else:
+            result = {'district': None}
+        return result
+@app.get('/drivers_with_long_suspensions')
+def get_drivers_with_long_suspensions():
+    with Session(autoflush=False, bind=engine) as db:
+        drivers = db.query(Driver).join(Fine).filter(Fine.suspension_period > 180).group_by(Driver.id).having(func.count(Fine.id) > 0).all()
+        response = []
+        for driver in drivers:
+            response.append({
+                'id': driver.id,
+                'licenseNumber': driver.licence_number,
+                'surname': driver.surname,
+                'name': driver.name,
+                'registrationAddress': driver.registration_address,
+                'phone': driver.phone
+            })
+        result = {'drivers': response}
+        return result
+@app.get('/total_fine_amount')
+def get_total_fine_amount(start_date: str, end_date: str):
+    start_date = datetime.strptime(start_date, '%Y-%m-%d')
+    end_date = datetime.strptime(end_date, '%Y-%m-%d')
+    with Session(autoflush=False, bind=engine) as db:
+        total_fine_amount = db.query(func.sum(Fine.fine_amount)).filter(Fine.date_time.between(start_date, end_date)).scalar()
+        result = {'total_fine_amount': total_fine_amount}
+        return result
+@app.get('/unpaid_fines_by_driver/{driver_id}')
+def get_unpaid_fines_by_driver(driver_id: int):
+    with Session(autoflush=False, bind=engine) as db:
+        fines = db.query(Fine).filter(Fine.driver_id == driver_id, Fine.is_paid == False).all()
+        response = []
+        for fine in fines:
+            response.append({
+                'id': fine.id,
+                'violationId': fine.violation_id,
+                'dateTime': fine.date_time,
+                'districtId': fine.district_id,
+                'fineAmount': fine.fine_amount,
+                'isPaid': fine.is_paid,
+                'suspensionPeriod': fine.suspension_period,
+                'inspectorId': fine.inspector_id
+            })
+        result = {'unpaid_fines': response}
+        return result
+@app.get('/most_fined_violations')
+def get_most_fined_violations():
+    with Session(autoflush=False, bind=engine) as db:
+        violations = db.query(Violation, func.count(Fine.id)).join(Fine).group_by(Violation.id).order_by(func.count(Fine.id).desc()).all()
+        response = []
+        for violation, count in violations:
+            response.append({
+                'violationId': violation.id,
+                'violationCode': violation.violation_code,
+                'violationName': violation.violation_type.name,
+                'fineCount': count
+            })
+        result = {'most_fined_violations': response}
+        return result

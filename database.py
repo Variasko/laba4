@@ -84,4 +84,3 @@ class ViolationType(Base):
 
 
 Base.metadata.create_all(engine)
-
